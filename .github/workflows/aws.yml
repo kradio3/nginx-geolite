@@ -1,7 +1,6 @@
 # SECRET VARIABLES:
 # AWS_ACCESS_KEY
 # AWS_SECRET_KEY
-# GitHub_PAT
 
 name: CI
 
@@ -9,30 +8,31 @@ on:
   pull_request:
   push:
     branches:
-      -master
+      - master
 
 env: 
-  APP_NAME: "baidu-me"
-  EBL_APP_NAME: "kiddotv"
-  EBL_ENV_NAME: "Baidu-me-frontend-env"
-  S3_BUCKET_NAME: "kiddotv-storage"
+  IMAGE_NAME: "nginx-geolite"
   AWS_REGION: "eu-west-2"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Build image
-      run: docker build --tag my-image:v1 .
+
+    - name: Clone
+      uses: actions/checkout@v1
+
+    - name: Build Docker image
+      run: docker build --tag ${{ env.IMAGE_NAME }}:latest .
 
     - name: Push to ECR
       id: ecr
       uses: jwalton/gh-ecr-push@v1
       with:
-        access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        region: us-east-1
-        image: my-image:v1  
+        access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        region: ${{ env.AWS_REGION}}
+        image: ${{ env.IMAGE_NAME }}
 
     - name: Deployed successfully!
-      run: echo App deployed to ELB
+      run: echo App deployed to ECR
